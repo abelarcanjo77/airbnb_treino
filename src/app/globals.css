@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* .swiper-scrollbar {
+  background-color: #d1d5db;
+  height: 5px;
+  bottom: 10px !important;
+  position: absolute !important;
+  margin-bottom: 50px;
+  z-index: 50 !important;
+} */
+
+.minha-scrollbar-customizada .swiper-scrollbar-drag {
+  background-color: #a3a3a3 !important; /* Cor preta ou a que preferir */
+  border-radius: 9999px !important;     /* Formato de pílula */
+  height: 100% !important;
+}
+
+/* Opcional: Efeito de hover no puxador */
+.minha-scrollbar-customizada .swiper-scrollbar-drag:hover {
+  background-color: #5f5f5f !important;
+}
+
+.swiper-wrapper {
+  transition-timing-function: linear !important;
+}

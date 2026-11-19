@@ -1,25 +1,79 @@
 import { Acomodacao, DadosApiAcomodacaoIcones } from "@/types/interfacesApi";
+import { client } from "@/sanity/lib/client";
 
-export async function fetchData() : Promise<DadosApiAcomodacaoIcones>{
-    try{
-        const response = await fetch("https://gist.githubusercontent.com/abelarcanjo77/9737b93519b6f09ebdbfff025c91d7c6/raw/0c299905b4038695aa96ee72360f84b51ab31a1c/db.json")
-        const dados = response.json()
-        return dados
-    } catch (error) {
-        console.error(error)
-        throw error
-    }
+export async function fetchData(): Promise<DadosApiAcomodacaoIcones> {
+  try {
+    const query = `{
+      "acomodacoes": *[_type == "acomodacao"] | order(number asc) {
+        number,
+        date,
+        host,
+        id,
+        title,
+        "slug": slug.current,
+        location,
+        detailsAccommod,
+        comodidades,
+        hasBadge,
+        price,
+        rating,
+        testimonials,
+        photos
+      },
+      "icones": *[_type == "icone"] {
+        id,
+        description,
+        source,
+        url
+      }
+    }`;
+
+    const dados = await client.fetch<DadosApiAcomodacaoIcones>(
+      query,
+      {},
+      { next: { revalidate: 60 } } // Atualiza os dados a cada 60 segundos
+    );
+
+    return {
+      acomodacoes: dados?.acomodacoes || [],
+      icones: dados?.icones || [],
+    };
+  } catch (error) {
+    console.error("Erro ao buscar dados do Sanity:", error);
+    throw error;
+  }
 }
 
-export async function fetchDataById(id: string) : Promise<Acomodacao | undefined> {
-    try{
-        const response = await fetchData()
-        const dados = response.acomodacoes.find((item: Acomodacao) => {
-            return item.slug === decodeURIComponent(id)
-        })
-        return dados
-    } catch (error) {
-        console.error(error)
-        throw error
-    }
+export async function fetchDataById(id: string): Promise<Acomodacao | undefined> {
+  try {
+    const slugDecodificado = decodeURIComponent(id);
+
+    const query = `*[_type == "acomodacao" && slug.current == $slug][0] {
+      number,
+      date,
+      host,
+      id,
+      title,
+      "slug": slug.current,
+      location,
+      detailsAccommod,
+      comodidades,
+      hasBadge,
+      price,
+      rating,
+      testimonials,
+      photos
+    }`;
+
+    const acomodacao = await client.fetch<Acomodacao | null>(
+      query,
+      { slug: slugDecodificado },
+      { next: { revalidate: 60 } }
+    );
+
+    return acomodacao || undefined;
+  } catch (error) {
+    console.error("Erro ao buscar acomodação por slug:", error);
+    throw error;
+  }
 }
